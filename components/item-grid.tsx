@@ -289,26 +289,30 @@ export const ItemGrid = ({ items }: ItemGridProps) => {
                   <Td muted mono center className="w-8 text-slate-400">{idx + 1}</Td>
 
                   {/* SKU Name — use resolved master name if mapped, else show cleaned matchKey */}
-                  <Td bold className="max-w-[180px]">
-                    {item.skuInfo ? (
-                      <span className="text-slate-800">{item.skuInfo.name}</span>
-                    ) : (
-                      <span className="text-orange-600 italic text-[10px]">
-                        {cleanKey(item.matchKey)}
-                        <span className="ml-1 not-italic text-orange-400">(unresolved)</span>
-                      </span>
-                    )}
+                  <Td bold title={item.skuInfo?.name ?? cleanKey(item.matchKey)}>
+                    <div className="max-w-[200px] truncate">
+                      {item.skuInfo ? (
+                        <span className="text-slate-800">{item.skuInfo.name}</span>
+                      ) : (
+                        <span className="text-orange-600 italic text-[10px]">
+                          {cleanKey(item.matchKey)}
+                          <span className="ml-1 not-italic text-orange-400">(unresolved)</span>
+                        </span>
+                      )}
+                    </div>
                   </Td>
 
                   {/* Article ID — cleaned vendor item code from the document */}
-                  <Td mono muted className="max-w-[100px] truncate text-slate-500 text-[10px]">
-                    <span title={item.matchKey}>{cleanKey(item.matchKey)}</span>
-                    {/* Show vendor SKU code from master if it differs from matchKey */}
-                    {item.skuInfo?.vendorSkuCode && item.skuInfo.vendorSkuCode !== cleanKey(item.matchKey) && (
-                      <span className="ml-1 text-orange-500" title={`Vendor SKU: ${item.skuInfo.vendorSkuCode}`}>
-                        /{cleanKey(item.skuInfo.vendorSkuCode)}
-                      </span>
-                    )}
+                  <Td mono muted className="text-slate-500 text-[10px]" title={item.matchKey}>
+                    <div className="max-w-[130px] truncate">
+                      <span>{cleanKey(item.matchKey)}</span>
+                      {/* Show vendor SKU code from master if it differs from matchKey */}
+                      {item.skuInfo?.vendorSkuCode && item.skuInfo.vendorSkuCode !== cleanKey(item.matchKey) && (
+                        <span className="ml-1 text-orange-500" title={`Vendor SKU: ${item.skuInfo.vendorSkuCode}`}>
+                          /{cleanKey(item.skuInfo.vendorSkuCode)}
+                        </span>
+                      )}
+                    </div>
                   </Td>
 
                   {/* ERP Code */}
@@ -326,8 +330,10 @@ export const ItemGrid = ({ items }: ItemGridProps) => {
                   <Td center muted>{item.skuInfo?.uom ?? '—'}</Td>
 
                   {/* Brand */}
-                  <Td muted className="max-w-[90px] truncate">
-                    {item.skuInfo?.brand ?? '—'}
+                  <Td muted>
+                    <div className="max-w-[90px] truncate" title={item.skuInfo?.brand}>
+                      {item.skuInfo?.brand ?? '—'}
+                    </div>
                   </Td>
 
                   {/* Row status */}

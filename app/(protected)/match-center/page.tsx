@@ -368,7 +368,7 @@ function MatchCenterInner() {
         {/* ── PO Tab ── */}
         {poNumber && !matchQuery.isLoading && activeTab === 'po' && match && (
           <div className="tab-content p-5 flex flex-col gap-5">
-            <MismatchBanner violations={match.violations} />
+            <MismatchBanner violations={match.violations} itemResults={match.itemResults} />
             {poDoc ? (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">

@@ -134,7 +134,7 @@ export default function UploadDocumentsPage() {
       ]);
 
       toast.success(
-        `✅ ${DOC_TYPES.find((t) => t.value === docType)?.label ?? 'Document'} uploaded successfully!\nLinked to PO: ${result.poNumber}`,
+        `✅ ${DOC_TYPES.find((t) => t.value === docType)?.label ?? 'Document'} uploaded successfully!\nLinked to PO: ${result?.data?.poNumber}`,
         { duration: 5000 },
       );
       if (result.warnings?.length)
@@ -148,7 +148,7 @@ export default function UploadDocumentsPage() {
 
       setTimeout(reset, 1200);
     } catch (err) {
-      const msg  = err instanceof Error ? err.message : 'Upload failed';
+      const msg = err instanceof Error ? err.message : 'Upload failed';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const code = (err as any)?.code as string | undefined;
       setStage('error');
@@ -173,11 +173,11 @@ export default function UploadDocumentsPage() {
   const isBusy = stage === 'uploading' || stage === 'parsing';
 
   const stageLabel: Record<Stage, string> = {
-    idle:      'Upload Document',
+    idle: 'Upload Document',
     uploading: `Uploading ${progress}%`,
-    parsing:   'AI parsing document…',
-    done:      'Done!',
-    error:     'Retry Upload',
+    parsing: 'AI parsing document…',
+    done: 'Done!',
+    error: 'Retry Upload',
   };
 
   return (
@@ -262,8 +262,8 @@ export default function UploadDocumentsPage() {
                   'flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 transition-all duration-150 select-none',
                   isBusy ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
                   dragOver ? 'border-teal-400 bg-teal-50 scale-[1.005]'
-                    : file   ? 'border-teal-300 bg-teal-50/40'
-                    : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50',
+                    : file ? 'border-teal-300 bg-teal-50/40'
+                      : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50',
                 )}
               >
                 {file ? (
@@ -304,26 +304,26 @@ export default function UploadDocumentsPage() {
                 {/* Step indicators */}
                 <div className="flex items-center gap-0 mb-5">
                   {[
-                    { key: 'uploading', label: 'Uploading',  done: stage === 'parsing' || stage === 'done' },
-                    { key: 'parsing',   label: 'AI Parsing', done: stage === 'done' },
-                    { key: 'done',      label: 'Complete',   done: false },
+                    { key: 'uploading', label: 'Uploading', done: stage === 'parsing' || stage === 'done' },
+                    { key: 'parsing', label: 'AI Parsing', done: stage === 'done' },
+                    { key: 'done', label: 'Complete', done: false },
                   ].map((step, i) => {
                     const isActive = stage === step.key;
-                    const isDone   = step.done;
+                    const isDone = step.done;
                     return (
                       <div key={step.key} className="flex items-center flex-1">
                         <div className="flex flex-col items-center gap-1.5">
                           <div className={cn(
                             'flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300',
-                            isDone   ? 'bg-emerald-500 text-white'
-                            : isActive ? 'bg-teal-600 text-white ring-4 ring-teal-100'
-                            : 'bg-slate-200 text-slate-400',
+                            isDone ? 'bg-emerald-500 text-white'
+                              : isActive ? 'bg-teal-600 text-white ring-4 ring-teal-100'
+                                : 'bg-slate-200 text-slate-400',
                           )}>
                             {isDone
                               ? <CheckCircle2 className="h-4 w-4" />
                               : isActive
-                              ? <span className="inline-block h-2.5 w-2.5 rounded-full bg-white animate-pulse" />
-                              : i + 1}
+                                ? <span className="inline-block h-2.5 w-2.5 rounded-full bg-white animate-pulse" />
+                                : i + 1}
                           </div>
                           <span className={cn(
                             'text-[10px] font-semibold whitespace-nowrap',
@@ -353,9 +353,9 @@ export default function UploadDocumentsPage() {
                     <div
                       className={cn(
                         'h-full rounded-full transition-all duration-300 ease-out',
-                        stage === 'done'     ? 'bg-emerald-500'
+                        stage === 'done' ? 'bg-emerald-500'
                           : stage === 'parsing' ? 'bg-teal-400 progress-stripe'
-                          : 'bg-teal-500',
+                            : 'bg-teal-500',
                       )}
                       style={{ width: stage === 'done' || stage === 'parsing' ? '100%' : `${progress}%` }}
                     />

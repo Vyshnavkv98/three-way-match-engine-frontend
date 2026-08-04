@@ -1,22 +1,40 @@
 'use client';
 
-import type { Violation } from '@/lib/types';
+import type { Violation, ItemMatchResult } from '@/lib/types';
 import { cn, reasonLabel, HARD_VIOLATIONS } from '@/lib/utils';
 import { AlertTriangle, AlertCircle, X } from 'lucide-react';
 import { useState } from 'react';
 
-interface MismatchBannerProps {
-  violations: Violation[];
+function cleanKey(raw: string): string {
+  const first = raw.trim().split(/[\s\n\r\t]+/)[0] ?? raw;
+  return first.trim();
 }
 
-export const MismatchBanner = ({ violations }: MismatchBannerProps) => {
+interface MismatchBannerProps {
+  violations: Violation[];
+  itemResults?: ItemMatchResult[];
+}
+
+export const MismatchBanner = ({ violations, itemResults }: MismatchBannerProps) => {
   const [dismissed, setDismissed] = useState(false);
 
   if (!violations.length || dismissed) return null;
 
   const hasHard = violations.some((v) => HARD_VIOLATIONS.has(v.code));
-  const hard    = violations.filter((v) => HARD_VIOLATIONS.has(v.code));
-  const soft    = violations.filter((v) => !HARD_VIOLATIONS.has(v.code));
+  const hard = violations.filter((v) => HARD_VIOLATIONS.has(v.code));
+  const soft = violations.filter((v) => !HARD_VIOLATIONS.has(v.code));
+  const resolveMatchKey = (key?: string) => {
+    if (!key) return null;
+    if (itemResults) {
+      const item = itemResults.find((i) => i.matchKey === key);
+      if (item?.skuInfo) {
+        const code = item.skuInfo.skuErpCode || cleanKey(item.matchKey);
+        const name = item.skuInfo.name;
+        return name ? `${code} - ${name}` : code;
+      }
+    }
+    return cleanKey(key);
+  };
 
   return (
     <div className={cn(
@@ -46,7 +64,7 @@ export const MismatchBanner = ({ violations }: MismatchBannerProps) => {
           <span key={i} className="inline-flex items-center gap-1 mr-1.5 mb-1 rounded-full border border-red-300 bg-red-100 px-2.5 py-0.5 text-[11px] font-semibold text-red-800">
             <span className="h-1 w-1 rounded-full bg-red-500 shrink-0" />
             {reasonLabel[v.code]}
-            {v.matchKey && <span className="font-mono opacity-70 ml-0.5">[{v.matchKey}]</span>}
+            {v.matchKey && <span className="font-mono opacity-70 ml-0.5">[{resolveMatchKey(v.matchKey)}]</span>}
           </span>
         ))}
 
@@ -55,7 +73,7 @@ export const MismatchBanner = ({ violations }: MismatchBannerProps) => {
           <span key={i} className="inline-flex items-center gap-1 mr-1.5 mb-1 rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800">
             <span className="h-1 w-1 rounded-full bg-amber-500 shrink-0" />
             {reasonLabel[v.code]}
-            {v.matchKey && <span className="font-mono opacity-70 ml-0.5">[{v.matchKey}]</span>}
+            {v.matchKey && <span className="font-mono opacity-70 ml-0.5">[{resolveMatchKey(v.matchKey)}]</span>}
           </span>
         ))}
       </div>
