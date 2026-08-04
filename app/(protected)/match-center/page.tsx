@@ -27,9 +27,9 @@ import {
 type Tab = 'po' | 'fulfillment' | 'delivery' | 'summary';
 
 const TIPS = [
-  { icon: FileUp,       text: 'Upload a PO first — it becomes the master reference' },
-  { icon: ScanLine,     text: 'AI extracts line items from PDFs and images automatically' },
-  { icon: GitCompare,   text: 'GRNs and Invoices are linked by PO number' },
+  { icon: FileUp, text: 'Upload a PO first — it becomes the master reference' },
+  { icon: ScanLine, text: 'AI extracts line items from PDFs and images automatically' },
+  { icon: GitCompare, text: 'GRNs and Invoices are linked by PO number' },
   { icon: CheckCircle2, text: 'Quantity, price and date mismatches are flagged instantly' },
 ];
 
@@ -50,36 +50,38 @@ function MatchCenterInner() {
   const router = useRouter();
   const initialPo = searchParams.get('po') ?? '';
 
-  const [poInput, setPoInput]       = useState(initialPo);
-  const [poNumber, setPoNumber]     = useState(initialPo);
-  const [activeTab, setActiveTab]   = useState<Tab>('po');
+  const [poInput, setPoInput] = useState(initialPo);
+  const [poNumber, setPoNumber] = useState(initialPo);
+  const [activeTab, setActiveTab] = useState<Tab>('po');
   const [activeSubDoc, setActiveSubDoc] = useState<LinkedDocument | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [drawerDoc, setDrawerDoc]   = useState<DrawerDoc | null>(null);
+  const [drawerDoc, setDrawerDoc] = useState<DrawerDoc | null>(null);
 
   /* ── Queries ── */
   const matchQuery = useQuery({
     queryKey: ['match', poNumber],
-    queryFn:  () => getMatch(poNumber),
-    enabled:  !!poNumber,
+    queryFn: () => getMatch(poNumber),
+    enabled: !!poNumber,
   });
   const summaryQuery = useQuery({
     queryKey: ['summary', poNumber],
-    queryFn:  () => getSummary(poNumber),
-    enabled:  !!poNumber && activeTab === 'summary',
+    queryFn: () => getSummary(poNumber),
+    enabled: !!poNumber && activeTab === 'summary',
   });
 
-  const match    = matchQuery.data;
-  const linked   = match?.linkedDocuments ?? [];
-  const poDoc    = linked.find((d) => d.documentType === 'po') ?? null;
-  const grns     = linked.filter((d) => d.documentType === 'grn');
+  const match = matchQuery.data;
+  const linked = match?.linkedDocuments ?? [];
+  const poDoc = linked.find((d) => d.documentType === 'po') ?? null;
+  const grns = linked.filter((d) => d.documentType === 'grn');
   const invoices = linked.filter((d) => d.documentType === 'invoice');
 
   /* ── Handlers ── */
   const openDrawer = (doc: LinkedDocument) =>
-    setDrawerDoc({ documentId: doc.documentId, documentType: doc.documentType,
-                   documentNumber: doc.documentNumber, documentDate: doc.documentDate,
-                   poNumber });
+    setDrawerDoc({
+      documentId: doc.documentId, documentType: doc.documentType,
+      documentNumber: doc.documentNumber, documentDate: doc.documentDate,
+      poNumber
+    });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,15 +116,15 @@ function MatchCenterInner() {
 
   useEffect(() => {
     if (activeTab === 'fulfillment' && !activeSubDoc && invoices.length > 0) setActiveSubDoc(invoices[0]);
-    if (activeTab === 'delivery'    && !activeSubDoc && grns.length > 0)     setActiveSubDoc(grns[0]);
+    if (activeTab === 'delivery' && !activeSubDoc && grns.length > 0) setActiveSubDoc(grns[0]);
   }, [activeTab, invoices, grns, activeSubDoc]);
 
   /* ── Tab definitions ── */
   const tabs: { id: Tab; icon: React.ElementType; label: string; count?: number }[] = [
-    { id: 'po',          icon: FileText,    label: 'Purchase Order', count: poDoc ? 1 : 0 },
-    { id: 'fulfillment', icon: ReceiptText, label: 'Fulfillment',    count: invoices.length },
-    { id: 'delivery',    icon: Truck,       label: 'Delivery',       count: grns.length },
-    { id: 'summary',     icon: BarChart3,   label: 'Summary' },
+    { id: 'po', icon: FileText, label: 'Purchase Order', count: poDoc ? 1 : 0 },
+    { id: 'fulfillment', icon: ReceiptText, label: 'Fulfillment', count: invoices.length },
+    { id: 'delivery', icon: Truck, label: 'Delivery', count: grns.length },
+    { id: 'summary', icon: BarChart3, label: 'Summary' },
   ];
 
   const tabCls = (id: Tab) => cn(
@@ -508,7 +510,7 @@ function MatchCenterInner() {
                         <Eye className="h-3 w-3" />
                         {doc.documentType === 'po' ? `PO: ${doc.documentNumber}`
                           : doc.documentType === 'grn' ? `GRN: ${doc.documentNumber}`
-                          : `Invoice: ${doc.documentNumber}`}
+                            : `Invoice: ${doc.documentNumber}`}
                       </button>
                     ))}
                   </div>

@@ -1,15 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getDocument } from '@/lib/api';
+import { useEffect, useRef, useState } from 'react';
 import { FilePreview } from '@/components/file-preview';
-import { Spinner } from '@/components/ui/spinner';
 import { cn, formatDate } from '@/lib/utils';
 import type { DocumentType } from '@/lib/types';
 import Link from 'next/link';
 import {
-  X, FileText, Truck, ReceiptText, GitCompare, AlertCircle,
+  X, FileText, Truck, ReceiptText, GitCompare,
 } from 'lucide-react';
 
 export interface DrawerDoc {
@@ -38,13 +35,7 @@ const TYPE_META: Record<DocumentType, { label: string; icon: React.ElementType; 
 /** Inner content — only rendered when a doc is selected */
 function DrawerContent({ doc, onClose }: { doc: DrawerDoc; onClose: () => void }) {
   const meta = TYPE_META[doc.documentType];
-
-  /* Fetch full document detail to get the confirmed id and mimeType */
-  const { data: detail, isLoading, isError, error } = useQuery({
-    queryKey: ['document', doc.documentId],
-    queryFn: () => getDocument(doc.documentId),
-    staleTime: 60_000,
-  });
+  const [resolvedMimeType, setResolvedMimeType] = useState<string | undefined>(doc.mimeType);
 
   return (
     <>
@@ -56,11 +47,11 @@ function DrawerContent({ doc, onClose }: { doc: DrawerDoc; onClose: () => void }
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-slate-900 truncate">
-            {detail?.originalName ?? doc.documentNumber}
+            {doc.documentNumber}
           </p>
-          {(detail?.documentDate ?? doc.documentDate) && (
+          {doc.documentDate && (
             <p className="text-xs text-slate-400">
-              {formatDate(detail?.documentDate ?? doc.documentDate)}
+              {formatDate(doc.documentDate)}
             </p>
           )}
         </div>
@@ -82,51 +73,31 @@ function DrawerContent({ doc, onClose }: { doc: DrawerDoc; onClose: () => void }
           <p className="text-xs font-mono font-semibold text-slate-800">{doc.documentNumber}</p>
         </div>
 
-        {(detail?.poNumber ?? doc.poNumber) && (
+        {doc.poNumber && (
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">PO Number</p>
-            <p className="text-xs font-mono font-semibold text-teal-700">
-              {detail?.poNumber ?? doc.poNumber}
-            </p>
+            <p className="text-xs font-mono font-semibold text-teal-700">{doc.poNumber}</p>
           </div>
         )}
 
-        {(detail?.vendorName ?? doc.vendorName) && (
+        {doc.vendorName && (
           <div>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vendor</p>
-            <p className="text-xs font-semibold text-slate-800 truncate max-w-[160px]">
-              {detail?.vendorName ?? doc.vendorName}
-            </p>
+            <p className="text-xs font-semibold text-slate-800 truncate max-w-[160px]">{doc.vendorName}</p>
           </div>
         )}
 
-        {detail?.status && (
+        {resolvedMimeType && (
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</p>
-            <p className={cn(
-              'text-xs font-semibold capitalize',
-              detail.status === 'parsed'  ? 'text-emerald-600'
-              : detail.status === 'failed' ? 'text-red-600'
-              : 'text-amber-600',
-            )}>
-              {detail.status}
-            </p>
-          </div>
-        )}
-
-        {detail?.itemCount != null && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Items</p>
-            <p className="text-xs font-semibold text-slate-800">{detail.itemCount}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Type</p>
+            <p className="text-xs font-semibold text-slate-500">{resolvedMimeType}</p>
           </div>
         )}
 
         {/* Match Center link */}
-        {(detail?.poNumber ?? doc.poNumber ?? doc.documentType === 'po') && (
+        {(doc.poNumber ?? doc.documentType === 'po') && (
           <Link
-            href={`/match-center?po=${encodeURIComponent(
-              detail?.poNumber ?? doc.poNumber ?? doc.documentNumber
-            )}`}
+            href={`/match-center?po=${encodeURIComponent(doc.poNumber ?? doc.documentNumber)}`}
             onClick={onClose}
             className="ml-auto flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition-colors whitespace-nowrap"
           >
@@ -136,58 +107,15 @@ function DrawerContent({ doc, onClose }: { doc: DrawerDoc; onClose: () => void }
         )}
       </div>
 
-      {/* ── Body: loading / error / preview ── */}
-      <div className="flex-1 overflow-hidden p-3 flex flex-col gap-2">
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-400">
-            <Spinner className="h-8 w-8" />
-            <p className="text-sm">Loading document info…</p>
-          </div>
-        )}
-
-        {isError && (
-          <div className="flex flex-col items-center justify-center h-full gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
-              <AlertCircle className="h-7 w-7 text-red-400" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-slate-700">Could not load document</p>
-              <p className="text-xs text-slate-400 mt-1">
-                {error instanceof Error ? error.message : 'Unknown error'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Render FilePreview as soon as we have the document detail — the raw file
-            is always stored regardless of parse status. Only skip if detail fetch failed. */}
-        {!isLoading && !isError && detail && (
-          <>
-            {(detail.status === 'parsing') && (
-              <div className="mb-3 flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 shrink-0">
-                <Spinner className="h-4 w-4 text-amber-500" />
-                <p className="text-xs text-amber-700">
-                  AI is still extracting line items — the raw file is shown below.
-                </p>
-              </div>
-            )}
-            {(detail.status === 'failed') && (
-              <div className="mb-3 flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 shrink-0">
-                <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
-                <p className="text-xs text-red-700">
-                  AI parsing failed — showing raw file. Try re-uploading for better results.
-                </p>
-              </div>
-            )}
-            <div className="flex-1 overflow-hidden">
-              <FilePreview
-                documentId={doc.documentId}
-                mimeType={detail.mimeType ?? doc.mimeType}
-                filename={detail.originalName}
-              />
-            </div>
-          </>
-        )}
+      {/* ── Body: preview only ── */}
+      <div className="flex-1 overflow-hidden p-3">
+        <FilePreview
+          documentId={doc.documentId}
+          poNumber={doc.poNumber}
+          mimeType={resolvedMimeType}
+          filename={doc.documentNumber}
+          onMimeTypeResolved={setResolvedMimeType}
+        />
       </div>
     </>
   );

@@ -42,17 +42,17 @@ const Th = ({
   <th
     onClick={sortable ? onSort : undefined}
     className={cn(
-      'px-2.5 py-2 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap border-b border-slate-200 select-none',
+      'px-3 py-3 text-[10px] font-extrabold uppercase tracking-widest whitespace-nowrap border-b border-slate-200/80 select-none bg-gradient-to-b from-slate-50/90 to-slate-100/50 backdrop-blur-md shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]',
       right   ? 'text-right'  : center ? 'text-center' : 'text-left',
-      muted   ? 'text-slate-400 bg-slate-50' : 'text-slate-600 bg-slate-50',
-      highlight && 'bg-amber-50 text-amber-700',
-      sortable && 'cursor-pointer hover:bg-slate-100',
+      muted   ? 'text-slate-400' : 'text-slate-600',
+      highlight && 'bg-gradient-to-b from-amber-50 to-amber-100/50 text-amber-800 shadow-[inset_0_-1px_0_rgba(245,158,11,0.2)]',
+      sortable && 'cursor-pointer hover:from-slate-100 hover:to-slate-200/80 transition-all duration-300',
     )}
   >
     <span className="inline-flex items-center gap-1">
       {children}
-      {sortable && sortDir === 'asc'  && <ChevronUp   className="h-2.5 w-2.5" />}
-      {sortable && sortDir === 'desc' && <ChevronDown className="h-2.5 w-2.5" />}
+      {sortable && sortDir === 'asc'  && <ChevronUp   className="h-2.5 w-2.5 text-teal-600" />}
+      {sortable && sortDir === 'desc' && <ChevronDown className="h-2.5 w-2.5 text-teal-600" />}
     </span>
   </th>
 );
@@ -81,14 +81,14 @@ const Td = ({
 }) => (
   <td
     className={cn(
-      'px-2.5 py-2 text-[11px] border-b border-slate-100 whitespace-nowrap',
+      'px-3 py-2.5 text-[11px] border-b border-slate-100/80 whitespace-nowrap transition-colors duration-300 group-hover:border-slate-200/80',
       right   ? 'text-right'  : center ? 'text-center' : 'text-left',
-      mono    ? 'font-mono'  : '',
-      bold    ? 'font-semibold' : '',
+      mono    ? 'font-mono font-medium tracking-tight'  : '',
+      bold    ? 'font-bold' : '',
       muted   ? 'text-slate-400' : 'text-slate-700',
-      hl === 'error' && 'bg-red-100 text-red-900 font-semibold',
-      hl === 'warn'  && 'bg-amber-100 text-amber-900 font-semibold',
-      hl === 'ok'    && 'text-emerald-700',
+      hl === 'error' && 'bg-red-50/80 text-red-700 font-semibold shadow-[inset_2px_0_0_#ef4444]',
+      hl === 'warn'  && 'bg-amber-50/80 text-amber-700 font-semibold shadow-[inset_2px_0_0_#f59e0b]',
+      hl === 'ok'    && 'text-emerald-600',
       className,
     )}
   >
@@ -192,8 +192,8 @@ export const ItemGrid = ({ items }: ItemGridProps) => {
       </div>
 
       {/* ── Table ── */}
-      <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-        <table className="w-full border-collapse bg-white text-[11px]" style={{ minWidth: '1200px' }}>
+      <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-900/5 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+        <table className="w-full border-collapse text-[11px]" style={{ minWidth: '1200px' }}>
           <thead>
             <tr>
               {/* Fixed identity columns */}
@@ -257,10 +257,10 @@ export const ItemGrid = ({ items }: ItemGridProps) => {
               /* Row stripe — only unmapped gets a full row tint; 
                  for mismatches we highlight individual cells instead */
               const rowCls = cn(
-                'transition-colors',
+                'transition-all duration-300 ease-in-out group hover:bg-slate-50 hover:shadow-[0_4px_20px_-8px_rgba(0,0,0,0.08)] hover:-translate-y-[1px] relative z-0 hover:z-10',
                 isUnmapped && !hasHard && !hasWarn
-                  ? 'bg-orange-50/60 hover:bg-orange-50'
-                  : 'hover:bg-slate-50/80',
+                  ? 'bg-orange-50/30'
+                  : 'bg-white',
               );
 
               /* Per-row status badge */

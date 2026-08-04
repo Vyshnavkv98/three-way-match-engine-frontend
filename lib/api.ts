@@ -84,6 +84,13 @@ export const getDocument = async (id: string): Promise<DocumentDetail> => {
 export const getDocumentFileUrl = (id: string): string =>
   `${BASE_URL}/documents/${id}/file`;
 
+export const getDocumentFileBlob = async (id: string): Promise<Blob> => {
+  const { data } = await apiClient.get<Blob>(`/documents/${id}/file`, {
+    responseType: 'blob',
+  });
+  return data;
+};
+
 export const uploadDocument = async (
   file: File,
   documentType: string,
